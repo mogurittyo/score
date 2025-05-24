@@ -1,0 +1,290 @@
+/* style.css (ローカルアプリ風デザイン調整版) */
+:root {
+    --bg-color: #2d2d2d;
+    --surface-bg-color: #3c3c3c;
+    --surface-border-color: #555555;
+    --text-color: #e0e0e0;
+    --text-secondary-color: #b0b0b0;
+    --accent-color: #5cacee;
+    --accent-hover-color: #7cc0f0;
+    --danger-color: #e74c3c;
+    --danger-hover-color: #c0392b;
+    --success-color: #2ecc71;
+    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --border-radius: 4px;
+    /* CSS変数をJavaScriptから参照・変更するための定義 */
+    --gallery-columns: 4; /* デフォルト列数 */
+}
+
+body {
+    font-family: var(--font-family);
+    margin: 0;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.5;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    font-size: 14px;
+}
+
+.container {
+    width: 95%;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 0 10px;
+}
+
+header {
+    background-color: var(--surface-bg-color);
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--surface-border-color);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-content {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: var(--text-color);
+    font-weight: 600;
+}
+
+.status-area {
+    font-size: 0.8rem;
+    text-align: right;
+    color: var(--text-secondary-color);
+}
+.status-area p {
+    margin: 0.1rem 0;
+}
+.status-area span {
+    font-weight: 600;
+    color: var(--text-color);
+}
+#lastSyncTime { color: var(--success-color); }
+#deleteQueueCount { color: var(--danger-color); }
+
+
+.header-actions button,
+.controls-bar button,
+.controls-content select,
+.controls-content input[type="number"],
+.controls-content input[type="checkbox"] {
+    background-color: #4a4a4a;
+    color: var(--text-color);
+    border: 1px solid var(--surface-border-color);
+    padding: 0.4rem 0.8rem;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+    font-size: 0.85rem;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+}
+.header-actions button:hover,
+.controls-bar button:hover {
+    background-color: #5a5a5a;
+    border-color: #6a6a6a;
+}
+.controls-content select,
+.controls-content input[type="number"] {
+    padding: 0.4rem;
+}
+
+
+.controls-bar {
+    background-color: var(--bg-color);
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--surface-border-color);
+    position: sticky;
+    /* top はJavaScriptで動的に設定 */
+    z-index: 99;
+}
+.controls-content {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1rem;
+    font-size: 0.85rem;
+}
+.controls-content label {
+    margin-right: 0.25rem;
+    color: var(--text-secondary-color);
+}
+
+.controls-content input[type="range"] {
+    width: 7rem;
+    accent-color: var(--accent-color);
+    vertical-align: middle;
+}
+.controls-content .checkbox-label {
+    margin-left: 0.25rem;
+    color: var(--text-color);
+    font-size: 0.85rem;
+    user-select: none;
+}
+.controls-content input[type="checkbox"] {
+    margin-right: 0.2rem;
+    width: 1em;
+    height: 1em;
+}
+
+
+main.container {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    flex-grow: 1;
+}
+
+.image-gallery {
+    display: grid;
+    grid-template-columns: repeat(var(--gallery-columns), 1fr); /* CSS変数を使用 */
+    gap: 0.75rem;
+}
+
+.gallery-item {
+    background-color: var(--surface-bg-color);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--surface-border-color);
+    overflow: hidden;
+    position: relative;
+    aspect-ratio: 3 / 4;
+    cursor: pointer;
+    transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.gallery-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+    border-color: var(--accent-color);
+}
+
+.gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.gallery-item .image-error-placeholder {
+    width: 100%; height: 100%; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    background-color: #424242; color: var(--text-secondary-color);
+    font-size: 0.75rem; padding: 0.5rem; text-align: center;
+}
+.gallery-item .image-error-placeholder svg {
+    width: 1.5rem; height: 1.5rem; margin-bottom: 0.3rem; fill: currentColor;
+}
+.gallery-item .filename-placeholder {
+    font-size: 0.65rem;
+    word-break: break-all;
+}
+
+
+.item-info {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(0,0,0,0.6);
+    padding: 0.3rem 0.5rem;
+    color: white;
+    font-size: 0.7rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.item-info .filename {
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 70%;
+}
+.item-info .score {
+    color: var(--accent-color);
+    font-weight: bold;
+}
+
+.delete-btn {
+    position: absolute;
+    top: 0.3rem;
+    right: 0.3rem;
+    background-color: rgba(200, 50, 50, 0.7);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 1.5rem;
+    height: 1.5rem;
+    font-size: 0.7rem;
+    line-height: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    opacity: 0.8;
+    transition: opacity 0.2s, background-color 0.2s;
+}
+.gallery-item:hover .delete-btn {
+    opacity: 1;
+}
+.delete-btn:hover {
+    background-color: var(--danger-color);
+}
+
+#loadingMessage, #errorMessage, #noImagesMessage {
+    grid-column: 1 / -1; text-align: center; padding: 2rem;
+    font-size: 1rem; color: var(--text-secondary-color);
+}
+.error-message { color: var(--danger-color); }
+
+.lightbox-modal {
+    display: none; position: fixed; z-index: 1000;
+    left: 0; top: 0; width: 100%; height: 100%;
+    overflow: auto; background-color: rgba(0,0,0,0.9);
+    backdrop-filter: blur(3px);
+    align-items: center; justify-content: center;
+}
+.lightbox-content {
+    margin: auto; display: block; max-width: 90vw; max-height: 85vh;
+    border-radius: var(--border-radius); box-shadow: 0 5px 20px rgba(0,0,0,0.7);
+}
+.lightbox-close-btn {
+    position: absolute; top: 15px; right: 25px;
+    color: #f1f1f1; font-size: 35px; font-weight: bold;
+    transition: 0.3s; cursor: pointer; user-select: none;
+}
+.lightbox-close-btn:hover { color: #bbb; }
+#lightboxCaption {
+    margin: auto; display: block; width: 80%; max-width: 700px;
+    text-align: center; color: #ccc; padding: 10px 0; font-size: 0.85rem;
+}
+
+footer {
+    text-align: center; padding: 0.75rem 0; margin-top: auto;
+    font-size: 0.75rem; color: var(--text-secondary-color);
+    border-top: 1px solid var(--surface-bg-color);
+}
+
+@media (max-width: 768px) {
+    body { font-size: 13px; }
+    header h1 { font-size: 1.1rem; }
+    .header-content { gap: 5px; }
+    .status-area { font-size: 0.75rem; }
+    .header-actions button { font-size: 0.75rem; padding: 0.3rem 0.6rem; }
+    /* .controls-bar top is set by JS */
+    .controls-content { flex-direction: column; align-items: stretch; }
+    .controls-content > div { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+    .controls-content > div:last-child { margin-bottom: 0; }
+    .controls-content input[type="range"], 
+    .controls-content input[type="number"] { 
+        width: auto; 
+        flex-grow: 1;
+        margin: 0 0.5rem; 
+    }
+}

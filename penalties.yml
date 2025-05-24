@@ -1,0 +1,28 @@
+# penalties.yml
+# DeepDanbooru等で検出されたタグに対する減点値を定義します。
+# スコア = (基本スコア) - Σ(該当タグの減点値)
+# タグ名はDeepDanbooruの出力やカスタムスコアラーの出力に合わせてください。
+
+# 例:
+# anatomy and quality issues
+extra_fingers: 3.0
+too_many_fingers: 3.0 # 同様の意味合いのタグ
+missing_fingers: 2.5
+malformed_hands: 2.8
+bad_hands: 2.8        # 同上
+bad_anatomy: 2.0
+# quality
+blurry: 1.5
+low_quality: 1.5
+worst_quality: 2.5
+jpeg_artifacts: 0.8
+# content issues
+text: 0.5
+signature: 0.7
+watermark: 1.0
+# other specific issues
+multiple_heads: 5.0
+cropped_head: 2.0
+# custom tags from a custom scorer could also be added here
+# custom_low_res: 1.2
+# custom_artifact: 0.8

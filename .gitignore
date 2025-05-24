@@ -1,0 +1,19 @@
+# 仮想環境
+venv/
+env/
+
+# Pythonキャッシュファイル
+__pycache__/
+*.pyc
+
+# データや重いファイル
+*.zip
+*.db
+*.mp4
+*.exe
+
+# Jupyterノートブックの出力
+.ipynb_checkpoints/
+
+#モデル
+models/
