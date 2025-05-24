@@ -223,8 +223,6 @@ def score_one_standard(image_path: Path, penalties_dict: dict):
         if _aesthetic_predictor_import_error:
             detected_failure_tags.append("aesthetic_predictor_unavailable")
 
-    import inspect
-    print("evaluate signature:", inspect.signature(_deepdanbooru_module.commands.evaluate))
     # DeepDanbooru 評価呼び出しの直前に追加
 
     # scoring.py の score_one_standard 内 DeepDanbooru 評価部分
