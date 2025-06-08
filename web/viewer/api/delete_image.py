@@ -13,11 +13,15 @@ def add_cors_headers(resp):
     return resp
 
 BASE_DIR = Path(__file__).resolve().parents[3]
+VIEWER_DIR = BASE_DIR / 'web' / 'viewer'
 IMAGES_ORIGINALS_DIR = BASE_DIR / 'images' / 'originals'
 DELETED_DIR = BASE_DIR / 'deleted'
 SCORES_JSON_PATH = BASE_DIR / 'scores.json'
 METADATA_JSON_PATH = BASE_DIR / 'metadata.json'
+SCORES_JSON_WEB_PATH = VIEWER_DIR / 'scores.json'
+METADATA_JSON_WEB_PATH = VIEWER_DIR / 'metadata.json'
 DELETE_REQUESTS_JSON_PATH = BASE_DIR / 'delete_requests.json'
+DELETE_REQUESTS_WEB_PATH = VIEWER_DIR / 'delete_requests.json'
 
 def load_json(path, default):
     if path.exists():
@@ -70,13 +74,16 @@ def delete_image():
 
     scores.pop(image_id, None)
     metadata.pop(image_id, None)
-    save_json(SCORES_JSON_PATH, scores)
-    save_json(METADATA_JSON_PATH, metadata)
+    for path in [SCORES_JSON_PATH, SCORES_JSON_WEB_PATH]:
+        save_json(path, scores)
+    for path in [METADATA_JSON_PATH, METADATA_JSON_WEB_PATH]:
+        save_json(path, metadata)
 
     delete_requests = load_json(DELETE_REQUESTS_JSON_PATH, [])
     if not any(item.get('id') == image_id for item in delete_requests):
         delete_requests.append({'id': image_id, 'filename': filename})
-        save_json(DELETE_REQUESTS_JSON_PATH, delete_requests)
+        for path in [DELETE_REQUESTS_JSON_PATH, DELETE_REQUESTS_WEB_PATH]:
+            save_json(path, delete_requests)
 
     return jsonify(success=True, message='deleted')
 
