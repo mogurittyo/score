@@ -34,7 +34,9 @@ document.addEventListener('DOMContentLoaded', () => {
         showLowScore: true,
         galleryColumns: 4,
         soundEffects: true,
-        vibration: true
+        vibration: true,
+        deleteAnimation: true,
+        deleteSoundFile: ''
     };
 
     const SCORES_JSON_URL = './scores.json';
@@ -249,23 +251,50 @@ document.addEventListener('DOMContentLoaded', () => {
             if (result.success) {
                 currentDeleteQueue = result.updatedQueue || updatedDeleteQueue;
                 deleteQueueCountEl.textContent = currentDeleteQueue.length;
-                if(uiSettings.soundEffects) playDeleteSound();
+                if(uiSettings.soundEffects) playDeleteSound(imageId);
                 if (uiSettings.vibration && navigator.vibrate) navigator.vibrate(100);
-                renderGallery(); // UIを即時更新
+                deleteImage(imageId);
             } else { throw new Error(result.message || "サーバー処理失敗。"); }
         } catch (error) { console.error('削除リクエストエラー:', error); alert(`削除リクエストエラー: ${error.message}`); }
     }
+
+    function deleteImage(id) {
+        const item = gallery.querySelector(`.gallery-item[data-id="${id}"]`);
+        if(!item) return;
+        const remove = () => item.remove();
+        if(uiSettings.deleteAnimation){
+            item.classList.add('shatter');
+            item.addEventListener('animationend', remove, { once: true });
+        } else {
+            remove();
+        }
+    }
     
-    function playDeleteSound() {
-        try {
-            const audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (!audioCtx) return;
-            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.type = 'triangle'; osc.frequency.setValueAtTime(200, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.2);
-        } catch(e) { console.warn("効果音再生失敗:", e); }
+    function playDeleteSound(id) {
+        const fallback = () => {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (!audioCtx) return;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+            } catch(e) { console.warn('効果音再生失敗:', e); }
+        };
+
+        if(uiSettings.deleteSoundFile){
+            const audio = new Audio(`./custom_sounds/${id}/${uiSettings.deleteSoundFile}`);
+            audio.play().catch(err => {
+                console.warn('カスタム効果音再生失敗:', err);
+                fallback();
+            });
+        } else {
+            fallback();
+        }
     }
 
     function openLightbox(imgData) {
@@ -291,6 +320,16 @@ document.addEventListener('DOMContentLoaded', () => {
         let newVibeSetting = prompt(`バイブレーションを有効にしますか？ (現在の値: ${uiSettings.vibration})\n「true」または「false」で入力してください。`, uiSettings.vibration);
         if (newVibeSetting !== null) {
             uiSettings.vibration = newVibeSetting.trim().toLowerCase() === 'true';
+        }
+
+        let newAnimSetting = prompt(`削除アニメーションを有効にしますか？ (現在の値: ${uiSettings.deleteAnimation})\n「true」または「false」で入力してください。`, uiSettings.deleteAnimation);
+        if (newAnimSetting !== null) {
+            uiSettings.deleteAnimation = newAnimSetting.trim().toLowerCase() === 'true';
+        }
+
+        let newSoundFile = prompt(`カスタム削除効果音のファイル名 (空でデフォルト):`, uiSettings.deleteSoundFile || '');
+        if (newSoundFile !== null) {
+            uiSettings.deleteSoundFile = newSoundFile.trim();
         }
         saveSettings();
         alert("設定を保存しました。");
