@@ -288,3 +288,13 @@ footer {
         margin: 0 0.5rem; 
     }
 }
+
+@keyframes shatter {
+    0% { transform: scale(1) rotate(0deg); opacity: 1; }
+    50% { transform: scale(1.1) rotate(5deg); }
+    100% { transform: scale(1.4) rotate(15deg); opacity: 0; filter: blur(2px); }
+}
+
+.shatter {
+    animation: shatter 0.6s forwards;
+}
