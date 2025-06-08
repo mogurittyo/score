@@ -40,6 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const SCORES_JSON_URL = './scores.json';
     const DELETE_REQUESTS_JSON_URL = './delete_requests.json';
     const UPDATE_DELETE_REQUESTS_API_URL = './api/updateDeleteRequests.php';
+    const DELETE_IMAGE_API_URL = './api/delete_image';
 
     function initializeApp() {
         if (currentYearEl) currentYearEl.textContent = new Date().getFullYear();
@@ -226,8 +227,8 @@ document.addEventListener('DOMContentLoaded', () => {
             item.appendChild(infoDiv);
 
             const deleteBtn = document.createElement('button'); deleteBtn.className = 'delete-btn';
-            deleteBtn.innerHTML = '🗑️'; deleteBtn.title = 'この画像を削除リクエスト';
-            deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); handleDeleteRequest(imgData.id, imgData.filename); });
+            deleteBtn.innerHTML = '🗑️'; deleteBtn.title = 'この画像を削除';
+            deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); deleteImage(imgData.id, imgData.filename, item); });
             item.appendChild(deleteBtn);
             gallery.appendChild(item);
         });
@@ -254,6 +255,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 renderGallery(); // UIを即時更新
             } else { throw new Error(result.message || "サーバー処理失敗。"); }
         } catch (error) { console.error('削除リクエストエラー:', error); alert(`削除リクエストエラー: ${error.message}`); }
+    }
+
+    async function deleteImage(imageId, filename, element) {
+        if (!confirm(`画像「${filename}」を完全に削除しますか？`)) return;
+        try {
+            const response = await fetch(DELETE_IMAGE_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: imageId })
+            });
+            if (!response.ok) throw new Error(`サーバーエラー: ${response.status} ${response.statusText}`);
+            const result = await response.json();
+            if (result.success) {
+                delete allImagesData[imageId];
+                element.classList.add('fade-out');
+                element.addEventListener('transitionend', () => element.remove());
+            } else {
+                throw new Error(result.message || '削除に失敗しました');
+            }
+        } catch (err) {
+            console.error('画像削除エラー:', err);
+            alert(`画像削除エラー: ${err.message}`);
+        }
     }
     
     function playDeleteSound() {
