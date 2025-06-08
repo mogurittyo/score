@@ -1,4 +1,7 @@
 // script.js
+let deleteMode = false; // グローバル削除モード
+let pointerDeleting = false;
+
 document.addEventListener('DOMContentLoaded', () => {
     const gallery = document.getElementById('imageGallery');
     const loadingMessage = document.getElementById('loadingMessage');
@@ -9,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentYearEl = document.getElementById('currentYear');
 
     const refreshDataBtn = document.getElementById('refreshDataBtn');
+    const deleteModeBtn = document.getElementById('deleteModeBtn');
     const settingsBtn = document.getElementById('settingsBtn');
 
     // Controls
@@ -34,7 +38,8 @@ document.addEventListener('DOMContentLoaded', () => {
         showLowScore: true,
         galleryColumns: 4,
         soundEffects: true,
-        vibration: true
+        vibration: true,
+        deleteMode: false
     };
 
     const SCORES_JSON_URL = './scores.json';
@@ -48,6 +53,16 @@ document.addEventListener('DOMContentLoaded', () => {
         fetchData(true);
 
         refreshDataBtn.addEventListener('click', () => fetchData(false));
+        if (deleteModeBtn) {
+            deleteModeBtn.addEventListener('click', toggleDeleteMode);
+            deleteModeBtn.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggleDeleteMode();
+                }
+            });
+            updateDeleteModeButton();
+        }
         sortBySelect.addEventListener('change', handleSortFilterChange);
         sortOrderSelect.addEventListener('change', handleSortFilterChange);
         scoreThresholdRange.addEventListener('input', handleScoreThresholdInput);
@@ -95,10 +110,25 @@ document.addEventListener('DOMContentLoaded', () => {
         showLowScoreToggle.checked = uiSettings.showLowScore;
         galleryColumnsInput.value = uiSettings.galleryColumns;
         scoreThresholdRange.disabled = uiSettings.showLowScore;
+        deleteMode = uiSettings.deleteMode || false;
+        updateDeleteModeButton();
     }
 
     function saveSettings() {
         localStorage.setItem('plainImageViewerSettings', JSON.stringify(uiSettings));
+    }
+
+    function updateDeleteModeButton() {
+        if (deleteModeBtn) {
+            deleteModeBtn.textContent = deleteMode ? '削除モード ON' : '削除モード OFF';
+        }
+    }
+
+    function toggleDeleteMode() {
+        deleteMode = !deleteMode;
+        uiSettings.deleteMode = deleteMode;
+        updateDeleteModeButton();
+        saveSettings();
     }
     
     function handleSortFilterChange() {
@@ -206,8 +236,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         imagesToDisplay.forEach(imgData => {
             const item = document.createElement('div');
-            item.className = 'gallery-item'; item.dataset.id = imgData.id;
-            item.addEventListener('click', () => openLightbox(imgData));
+            item.className = 'gallery-item';
+            item.dataset.id = imgData.id;
+            item.dataset.filename = imgData.filename;
+            item.addEventListener('click', () => { if(!deleteMode) openLightbox(imgData); });
 
             const imgElement = document.createElement('img');
             imgElement.src = imgData.thumbnail_web_path || `./cloude_image/thumbnails/${imgData.filename.replace(/\.[^/.]+$/, ".jpg")}`;
@@ -225,16 +257,52 @@ document.addEventListener('DOMContentLoaded', () => {
             infoDiv.innerHTML = `<p class="filename" title="${imgData.filename}">${imgData.filename}</p><p class="score">${imgData.score_final ? imgData.score_final.toFixed(2) : 'N/A'}</p>`;
             item.appendChild(infoDiv);
 
-            const deleteBtn = document.createElement('button'); deleteBtn.className = 'delete-btn';
-            deleteBtn.innerHTML = '🗑️'; deleteBtn.title = 'この画像を削除リクエスト';
-            deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); handleDeleteRequest(imgData.id, imgData.filename); });
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'delete-btn';
+            deleteBtn.innerHTML = '🗑️';
+            deleteBtn.title = 'この画像を削除リクエスト';
+            deleteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                handleDeleteRequest(imgData.id, imgData.filename);
+            });
             item.appendChild(deleteBtn);
+
+            item.addEventListener('pointerdown', (e) => {
+                if (deleteMode) {
+                    e.preventDefault();
+                    pointerDeleting = true;
+                    deleteImage(imgData.id);
+                }
+            });
+            item.addEventListener('pointerenter', () => {
+                if (deleteMode && pointerDeleting) {
+                    deleteImage(imgData.id);
+                }
+            });
+            item.addEventListener('pointerup', () => {
+                if (deleteMode) {
+                    pointerDeleting = false;
+                }
+            });
             gallery.appendChild(item);
         });
     }
 
+    function deleteImage(imageId) {
+        const item = gallery.querySelector(`.gallery-item[data-id="${imageId}"]`);
+        if (item) {
+            item.classList.add('deleting');
+            setTimeout(() => item.remove(), 200);
+        }
+        const filename = item ? item.dataset.filename : (allImagesData[imageId]?.filename || '');
+        handleDeleteRequest(imageId, filename);
+    }
+
     async function handleDeleteRequest(imageId, filename) {
-        if (!confirm(`画像「${filename}」を削除リクエストに追加しますか？\nこの操作はサーバー上の delete_requests.json を更新します。`)) return;
+        if (!deleteMode) {
+            const ok = confirm(`画像「${filename}」を削除リクエストに追加しますか？\nこの操作はサーバー上の delete_requests.json を更新します。`);
+            if (!ok) return;
+        }
         const newItem = { id: imageId, filename: filename };
         let updatedDeleteQueue = [...currentDeleteQueue];
         if (!updatedDeleteQueue.some(item => item.id === imageId)) updatedDeleteQueue.push(newItem);

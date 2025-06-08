@@ -288,3 +288,12 @@ footer {
         margin: 0 0.5rem; 
     }
 }
+
+.gallery-item.deleting {
+    animation: deleteFade 0.2s forwards;
+}
+
+@keyframes deleteFade {
+    from { opacity: 1; transform: scale(1); }
+    to { opacity: 0; transform: scale(0.8); }
+}
