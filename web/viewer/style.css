@@ -149,7 +149,7 @@ main.container {
 .image-gallery {
     display: grid;
     grid-template-columns: repeat(var(--gallery-columns), 1fr); /* CSS変数を使用 */
-    gap: 0.75rem;
+    gap: 0;
 }
 
 .gallery-item {
